@@ -3,13 +3,13 @@
 쇼핑몰 상품 가격을 직접 기록하고, 가격 추이와 목표가 도달 여부를 한눈에 보는 미니 웹앱입니다.
 HTML 파일 하나 + Supabase로 동작하며, 빌드 과정 없이 정적 호스팅에 바로 배포할 수 있습니다.
 
-**배포 링크:** <!-- TODO: https://your-app.vercel.app --> _준비 중_
+**배포 링크:** https://price-tracker-theta-umber.vercel.app/
 
 ## 스크린샷
 
 | 상품 목록 | 상품 상세 |
 | --- | --- |
-| <!-- ![목록](docs/list.png) --> _스크린샷 자리_ | <!-- ![상세](docs/detail.png) --> _스크린샷 자리_ |
+| ![상품 목록](docs/list.png) | ![상품 상세](docs/detail.png) |
 
 ## 기능
 
