@@ -1,0 +1,1199 @@
+<!doctype html>
+<!--
+  ============================================================
+  설정: Supabase 대시보드 > Project Settings > API 에서 복사해 채우세요.
+  - SUPABASE_URL      : Project URL (https://xxxx.supabase.co)
+  - SUPABASE_ANON_KEY : anon / public (또는 publishable) 키
+  service_role / secret 키는 절대 넣지 마세요. (넣으면 앱이 실행을 거부합니다)
+  ============================================================
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+  const SUPABASE_URL = "https://xcrdxxrewwvcikvfatzo.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_OE58adsfzjZJfBESS5j0ig_3IIqvPUp";
+</script>
+<title>가격 트래커</title>
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏷️</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --bg: #f4f5f8;
+    --surface: #ffffff;
+    --surface-2: #eef0f4;
+    --text: #14171c;
+    --muted: #5f6774;
+    --border: #e2e5ea;
+    --accent: #2f6fed;
+    --accent-ink: #ffffff;
+    --accent-soft: rgba(47, 111, 237, .12);
+    --good: #0f8a4f;
+    --good-soft: rgba(15, 138, 79, .12);
+    --danger: #d23b3b;
+    --danger-soft: rgba(210, 59, 59, .08);
+    --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 4px 12px rgba(16, 24, 40, .06);
+    --shadow-hover: 0 2px 4px rgba(16, 24, 40, .06), 0 12px 28px rgba(16, 24, 40, .12);
+    --radius: 16px;
+    --hero-from: #2f6fed;
+    --hero-to: #7b4dff;
+
+    /* 쇼핑몰별 썸네일 색 */
+    --s-coupang-a: #ffe3df; --s-coupang-b: #ffc7bd; --s-coupang: #c8341f;
+    --s-costco-a: #dfe9ff;  --s-costco-b: #c3d4ff;  --s-costco: #1f4fb8;
+    --s-naver-a: #dcf7e6;   --s-naver-b: #b8edcb;   --s-naver: #108a3e;
+    --s-11st-a: #ffe4ea;    --s-11st-b: #ffc4d1;    --s-11st: #c41f4a;
+    --s-etc-a: #ece9f6;     --s-etc-b: #d9d3ee;     --s-etc: #5b4b9a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d0f13; --surface: #161920; --surface-2: #1f232b; --text: #e8eaee; --muted: #9aa3b2;
+      --border: #2a2f39; --accent: #6b9bff; --accent-ink: #0b1020; --accent-soft: rgba(107, 155, 255, .16);
+      --good: #3ccf8e; --good-soft: rgba(60, 207, 142, .15); --danger: #ff7a7a; --danger-soft: rgba(255, 122, 122, .10);
+      --shadow: none; --shadow-hover: 0 0 0 1px #3a4150;
+      --hero-from: #2a4fb0; --hero-to: #5a36c0;
+      --s-coupang-a: #3a1f1c; --s-coupang-b: #4d2620; --s-coupang: #ff9a8a;
+      --s-costco-a: #1c2640;  --s-costco-b: #22305a;  --s-costco: #9bb8ff;
+      --s-naver-a: #15301f;   --s-naver-b: #1b3f28;   --s-naver: #6fe09a;
+      --s-11st-a: #3a1a24;    --s-11st-b: #4d2030;    --s-11st: #ff8fab;
+      --s-etc-a: #26223a;     --s-etc-b: #322b4d;     --s-etc: #c2b5ff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d0f13; --surface: #161920; --surface-2: #1f232b; --text: #e8eaee; --muted: #9aa3b2;
+    --border: #2a2f39; --accent: #6b9bff; --accent-ink: #0b1020; --accent-soft: rgba(107, 155, 255, .16);
+    --good: #3ccf8e; --good-soft: rgba(60, 207, 142, .15); --danger: #ff7a7a; --danger-soft: rgba(255, 122, 122, .10);
+    --shadow: none; --shadow-hover: 0 0 0 1px #3a4150;
+    --hero-from: #2a4fb0; --hero-to: #5a36c0;
+    --s-coupang-a: #3a1f1c; --s-coupang-b: #4d2620; --s-coupang: #ff9a8a;
+    --s-costco-a: #1c2640;  --s-costco-b: #22305a;  --s-costco: #9bb8ff;
+    --s-naver-a: #15301f;   --s-naver-b: #1b3f28;   --s-naver: #6fe09a;
+    --s-11st-a: #3a1a24;    --s-11st-b: #4d2030;    --s-11st: #ff8fab;
+    --s-etc-a: #26223a;     --s-etc-b: #322b4d;     --s-etc: #c2b5ff;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 16px 16px 56px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- 헤더 ---------- */
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  header.top h1 { font-size: 20px; margin: 0; letter-spacing: -.02em; }
+  header.top h1 a { color: inherit; text-decoration: none; }
+  .icon-btn {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 999px; width: 38px; height: 38px; cursor: pointer; font-size: 16px;
+  }
+
+  /* ---------- 요약 히어로 ---------- */
+  .hero {
+    background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
+    color: #fff; border-radius: 20px; padding: 18px; position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ""; position: absolute; right: -40px; top: -60px; width: 200px; height: 200px;
+    border-radius: 50%; background: rgba(255, 255, 255, .10);
+  }
+  .hero p { margin: 0 0 12px; opacity: .9; font-size: 14px; position: relative; }
+  .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; position: relative; }
+  .hero-stat { background: rgba(255, 255, 255, .14); border-radius: 12px; padding: 10px 12px; }
+  .hero-stat b { display: block; font-size: 22px; line-height: 1.2; }
+  .hero-stat span { font-size: 12px; opacity: .9; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ---------- 공통 패널/폼 ---------- */
+  .panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px;
+  }
+  .stack > * + * { margin-top: 16px; }
+  h2 { font-size: 16px; margin: 0 0 12px; }
+  label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+  input, select {
+    font: inherit; color: var(--text); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; width: 100%; min-height: 44px;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button.primary {
+    font: inherit; font-weight: 600; border: 0; border-radius: 10px; min-height: 44px;
+    padding: 10px 18px; background: var(--accent); color: var(--accent-ink); cursor: pointer;
+  }
+  button.primary:disabled { opacity: .6; cursor: progress; }
+
+  details.add > summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    font-weight: 700; font-size: 16px;
+  }
+  details.add > summary::-webkit-details-marker { display: none; }
+  details.add > summary .plus {
+    width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--accent-soft); color: var(--accent); font-size: 20px; transition: transform .2s;
+  }
+  details.add[open] > summary .plus { transform: rotate(45deg); }
+  .add-body { display: grid; gap: 16px; margin-top: 14px; grid-template-columns: 1fr; }
+  .add-body form { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  .add-preview { display: none; }
+  @media (min-width: 720px) {
+    .add-body { grid-template-columns: 1fr 200px; }
+    .add-body form { grid-template-columns: 2fr 1fr; }
+    .add-body form .full { grid-column: 1 / -1; }
+    .add-preview { display: block; }
+  }
+  .add-preview .thumb { border-radius: 14px; aspect-ratio: 1; }
+  .add-preview small { display: block; text-align: center; color: var(--muted); margin-top: 6px; }
+
+  /* ---------- 필터 ---------- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin: 24px 0 12px; }
+  .chips { display: flex; gap: 6px; min-width: 0; max-width: 100%; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    font: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    border-radius: 999px; padding: 6px 12px;
+  }
+  .chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .toolbar select { width: auto; min-height: 36px; padding: 6px 10px; font-size: 13px; }
+
+  /* ---------- 썸네일 ---------- */
+  .thumb {
+    position: relative; overflow: hidden; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--ta), var(--tb)); color: var(--tc);
+  }
+  .thumb .emoji { font-size: 44px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .15)); }
+  .thumb .initial {
+    position: absolute; right: 10px; bottom: 4px; font-size: 52px; font-weight: 800; opacity: .12; letter-spacing: -.04em;
+  }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 8px; background: #fff; }
+  .thumb-wrap { position: relative; }
+  .thumb-actions { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 6px; z-index: 2; flex-wrap: wrap; }
+  .pill-btn {
+    font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; border: 0; border-radius: 999px;
+    padding: 6px 10px; background: rgba(20, 23, 28, .78); color: #fff; backdrop-filter: blur(4px);
+  }
+  .pill-btn:disabled { opacity: .6; cursor: progress; }
+  .img-pick { display: flex; gap: 8px; align-items: stretch; }
+  .img-pick input[type="url"] { flex: 1; min-width: 0; }
+  .file-btn {
+    display: flex; align-items: center; white-space: nowrap; cursor: pointer; font-weight: 600; color: var(--accent);
+    background: var(--accent-soft); border-radius: 10px; padding: 0 14px; min-height: 44px; font-size: 14px;
+  }
+  .file-btn input { display: none; }
+  .file-name { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .s-coupang { --ta: var(--s-coupang-a); --tb: var(--s-coupang-b); --tc: var(--s-coupang); }
+  .s-costco  { --ta: var(--s-costco-a);  --tb: var(--s-costco-b);  --tc: var(--s-costco); }
+  .s-naver   { --ta: var(--s-naver-a);   --tb: var(--s-naver-b);   --tc: var(--s-naver); }
+  .s-11st    { --ta: var(--s-11st-a);    --tb: var(--s-11st-b);    --tc: var(--s-11st); }
+  .s-etc     { --ta: var(--s-etc-a);     --tb: var(--s-etc-b);     --tc: var(--s-etc); }
+
+  /* ---------- 카드 ---------- */
+  .cards { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 600px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 920px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden;
+    transition: transform .15s, box-shadow .15s; animation: rise .35s both;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+  .card.hit { border-color: var(--good); }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .card { animation: none; transition: none; } }
+
+  .card-main { color: inherit; text-decoration: none; display: block; flex: 1; }
+  .card .thumb { height: 132px; }
+  .card .over { position: absolute; left: 10px; right: 10px; top: 10px; display: flex; justify-content: space-between; gap: 6px; z-index: 1; }
+  .badge {
+    display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+    background: var(--surface-2); color: var(--muted);
+  }
+  .over .badge { background: rgba(255, 255, 255, .88); color: #333; backdrop-filter: blur(4px); }
+  .badge.hit, .over .badge.hit { background: var(--good); color: #fff; }
+
+  .card-body { padding: 12px 14px 14px; }
+  .card h3 { font-size: 15px; font-weight: 600; margin: 0 0 8px; word-break: break-word;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.9em; }
+  .price-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+  .price-now { font-size: 22px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
+  .price-now.good { color: var(--good); }
+  .price-now.none { font-size: 15px; font-weight: 600; color: var(--muted); }
+  .change { font-size: 12px; font-weight: 700; margin-top: 2px; }
+  .change.down { color: var(--good); }
+  .change.up { color: var(--danger); }
+  .change.flat { color: var(--muted); }
+  .spark { flex-shrink: 0; }
+  .spark path.l { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .spark path.a { fill: var(--accent-soft); }
+  .spark circle { fill: var(--accent); }
+  .spark.down path.l { stroke: var(--good); } .spark.down path.a { fill: var(--good-soft); } .spark.down circle { fill: var(--good); }
+  .spark.up path.l { stroke: var(--danger); } .spark.up path.a { fill: var(--danger-soft); } .spark.up circle { fill: var(--danger); }
+  .spark line { stroke: var(--good); stroke-width: 1; stroke-dasharray: 3 3; }
+
+  .meter { margin-top: 12px; }
+  .meter-bar { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .meter-bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .5s; }
+  .meter.hit .meter-bar i { background: var(--good); }
+  .meter-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .meter.hit .meter-label b { color: var(--good); }
+
+  .mini-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 12px 0 0; }
+  .mini-stats div { background: var(--surface-2); border-radius: 10px; padding: 6px 8px; min-width: 0; }
+  .mini-stats dt { font-size: 11px; color: var(--muted); }
+  .mini-stats dd { margin: 0; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .card-foot {
+    border-top: 1px solid var(--border); padding: 9px 14px; font-size: 12px;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted);
+  }
+  .card-foot a { text-decoration: none; font-weight: 700; font-size: 13px; }
+
+  .empty { text-align: center; color: var(--muted); padding: 32px 16px; }
+  .empty .big { font-size: 40px; display: block; margin-bottom: 8px; }
+  .empty small { display: block; margin-top: 6px; }
+
+  /* ---------- 에러/토스트/스켈레톤 ---------- */
+  .error {
+    border: 1px solid var(--danger); background: var(--danger-soft); color: var(--text);
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px;
+  }
+  .error strong { color: var(--danger); }
+  .error code, .notice code { font-size: 12px; background: var(--surface-2); padding: 1px 6px; border-radius: 6px; word-break: break-all; }
+  .error ul { margin: 8px 0 0; padding-left: 18px; }
+  .error .raw { margin-top: 8px; font-size: 12px; color: var(--muted); word-break: break-all; }
+  .notice { font-size: 13px; color: var(--muted); background: var(--surface); border: 1px dashed var(--border); border-radius: 12px; padding: 10px 12px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px;
+    opacity: 0; transition: .2s; pointer-events: none; max-width: calc(100% - 32px); z-index: 10;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .skeleton { background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
+    background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: var(--radius); }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  /* ---------- 상세 ---------- */
+  .back { display: inline-block; margin-bottom: 12px; text-decoration: none; font-weight: 600; }
+  .detail-hero { display: grid; gap: 16px; grid-template-columns: 1fr; padding: 0; overflow: hidden; }
+  .detail-hero .thumb { height: 180px; }
+  .detail-hero .thumb .emoji { font-size: 72px; }
+  .detail-hero .thumb .initial { font-size: 96px; }
+  .detail-info { padding: 0 16px 16px; }
+  @media (min-width: 720px) {
+    .detail-hero { grid-template-columns: 260px 1fr; }
+    .detail-hero .thumb { height: 100%; min-height: 240px; }
+    .detail-info { padding: 18px 18px 18px 0; }
+  }
+  .detail-info h2 { font-size: 21px; margin: 8px 0 2px; word-break: break-word; letter-spacing: -.02em; }
+  .detail-info .sub { color: var(--muted); font-size: 13px; }
+  .detail-price { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .detail-price .price-now { font-size: 30px; }
+  .tiles { display: grid; gap: 8px; grid-template-columns: repeat(2, 1fr); margin: 14px 0 0; }
+  @media (min-width: 560px) { .tiles { grid-template-columns: repeat(4, 1fr); } }
+  .tiles div { background: var(--surface-2); border-radius: 12px; padding: 10px 12px; }
+  .tiles dt { font-size: 12px; color: var(--muted); }
+  .tiles dd { margin: 0; font-size: 16px; font-weight: 700; }
+  .tiles dd.good { color: var(--good); }
+  .hit-banner { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--good-soft); color: var(--good); font-weight: 700; }
+
+  form.inline { display: flex; gap: 8px; }
+  form.inline input { flex: 1; min-width: 0; }
+
+  .chart { width: 100%; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .grid line { stroke: var(--border); }
+  .chart .axis text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .chart .line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+  .chart .dot { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+  .chart .dot.last { fill: var(--accent); }
+  .chart .dot.min { stroke: var(--good); fill: var(--good); }
+  .chart .target line { stroke: var(--good); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  .chart .target text { fill: var(--good); font-size: 11px; font-weight: 700; }
+  .chart .label { fill: var(--text); font-size: 12px; font-weight: 700; }
+  .chart-note { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+  #areaGrad .s0 { stop-color: var(--accent); stop-opacity: .28; }
+  #areaGrad .s1 { stop-color: var(--accent); stop-opacity: 0; }
+
+  .logs { list-style: none; margin: 0; padding: 0; }
+  .logs li {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums;
+  }
+  .logs li:last-child { border-bottom: 0; }
+  .logs .when { color: var(--muted); font-size: 13px; }
+  .logs li > span:last-child { white-space: nowrap; }
+  .logs .price { font-weight: 700; }
+  .logs .tag { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-left: 6px; background: var(--good-soft); color: var(--good); }
+  .diff { font-size: 12px; margin-left: 6px; font-weight: 600; }
+  .diff.down { color: var(--good); }
+  .diff.up { color: var(--danger); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1><a href="#/">🏷️ 가격 트래커</a></h1>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="테마 전환" title="라이트/다크 전환">◐</button>
+  </header>
+  <div id="error"></div>
+  <main id="app">
+    <div class="skeleton" style="height:120px"></div>
+    <div class="cards" style="margin-top:16px">
+      <div class="skeleton" style="height:300px"></div><div class="skeleton" style="height:300px"></div><div class="skeleton" style="height:300px"></div>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const STORES = ["쿠팡", "코스트코", "네이버", "11번가", "기타"];
+  const STORE_CLASS = { "쿠팡": "s-coupang", "코스트코": "s-costco", "네이버": "s-naver", "11번가": "s-11st" };
+  const MAX_INT = 2147483647;
+
+  // 상품명 키워드 → 썸네일 이모지 (이미지가 없을 때)
+  const EMOJI_RULES = [
+    [/물|생수|삼다수|에비앙|탄산/, "💧"], [/커피|원두|캡슐|라떼/, "☕"], [/아몬드|견과|땅콩|호두|캐슈/, "🥜"],
+    [/라면|면|파스타/, "🍜"], [/쌀|햇반/, "🍚"], [/과자|스낵|초콜릿|쿠키/, "🍪"], [/고기|소고기|돼지|닭/, "🥩"],
+    [/과일|사과|바나나|딸기|포도|귤/, "🍎"], [/우유|요거트|치즈/, "🥛"], [/와인|맥주|소주|위스키/, "🍷"],
+    [/에어팟|버즈|이어폰|헤드폰|헤드셋/, "🎧"], [/마우스|MX Master|로지텍 G/, "🖱️"], [/키보드/, "⌨️"], [/노트북|맥북|그램/, "💻"],
+    [/모니터|TV|티비|텔레비전/i, "🖥️"], [/아이폰|갤럭시|폰|스마트폰/, "📱"], [/아이패드|태블릿|탭/, "📲"],
+    [/워치|시계/, "⌚"], [/카메라/, "📷"], [/게임|닌텐도|스위치|플스|PS5/i, "🎮"], [/청소기|다이슨|로봇청소/, "🧹"],
+    [/세탁|건조기/, "🧺"], [/냉장고|밥솥|에어프라이어|전자레인지/, "🍳"], [/신발|운동화|나이키|아디다스/, "👟"],
+    [/가방|백팩/, "🎒"], [/옷|티셔츠|셔츠|바지|패딩|자켓|코트/, "👕"], [/화장품|크림|로션|선크림|립/, "🧴"],
+    [/샴푸|치약|세제|휴지|물티슈/, "🧻"], [/책|도서/, "📚"], [/장난감|레고/, "🧸"], [/기저귀|분유/, "🍼"],
+    [/사료|강아지|고양이/, "🐾"], [/비타민|영양제/, "💊"],
+  ];
+  const emojiFor = (name) => (EMOJI_RULES.find(([re]) => re.test(name)) || [, "🛍️"])[1];
+
+  const $app = document.getElementById("app");
+  const $error = document.getElementById("error");
+  const $toast = document.getElementById("toast");
+
+  // ---------- 유틸 ----------
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+  ));
+  const nf = new Intl.NumberFormat("ko-KR");
+  const won = (n) => (n == null ? "—" : nf.format(n) + "원");
+  const dateFmt = new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric", month: "long", day: "numeric", weekday: "short", hour: "2-digit", minute: "2-digit",
+  });
+  const shortDateFmt = new Intl.DateTimeFormat("ko-KR", { month: "numeric", day: "numeric" });
+  const logDateFmt = new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric", weekday: "short", hour: "2-digit", minute: "2-digit" });
+  const fmtLogDate = (s) => (new Date(s).getFullYear() === new Date().getFullYear() ? logDateFmt : dateFmt).format(new Date(s));
+  const fmtDate = (s) => dateFmt.format(new Date(s));
+  const fmtShort = (s) => shortDateFmt.format(new Date(s));
+  const rtf = new Intl.RelativeTimeFormat("ko-KR", { numeric: "auto" });
+  function fmtAgo(s) {
+    const diff = (new Date(s) - Date.now()) / 1000;
+    const units = [["day", 86400], ["hour", 3600], ["minute", 60]];
+    for (const [u, sec] of units) if (Math.abs(diff) >= sec) return rtf.format(Math.round(diff / sec), u);
+    return "방금 전";
+  }
+
+  // http(s) 링크만 허용 (javascript: 등 차단)
+  function safeUrl(u) {
+    if (!u) return null;
+    try {
+      const url = new URL(u);
+      return url.protocol === "http:" || url.protocol === "https:" ? url.href : null;
+    } catch { return null; }
+  }
+
+  // "12,900" / "12900원" → 12900
+  function parsePrice(raw) {
+    const s = String(raw ?? "").replace(/[,\s원]/g, "");
+    if (s === "") return null;
+    if (!/^\d+$/.test(s)) return NaN;
+    return Number(s);
+  }
+  function validPrice(n) { return Number.isInteger(n) && n > 0 && n <= MAX_INT; }
+
+  let toastTimer;
+  function toast(msg) {
+    $toast.textContent = msg;
+    $toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => $toast.classList.remove("show"), 2200);
+  }
+
+  // ---------- 테마 ----------
+  const root = document.documentElement;
+  try { const t = localStorage.getItem("theme"); if (t) root.dataset.theme = t; } catch {}
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const current = root.dataset.theme
+      || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    root.dataset.theme = current === "dark" ? "light" : "dark";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch {}
+  });
+
+  // ---------- 에러 표시 ----------
+  function explain(err) {
+    const msg = (err && (err.message || err.error_description || err.msg)) || String(err);
+    const code = err && err.code ? String(err.code) : "";
+    const blob = `${code} ${msg} ${err && err.details || ""} ${err && err.hint || ""}`;
+    const hints = [];
+
+    if (/Failed to fetch|NetworkError|Load failed|ERR_NAME_NOT_RESOLVED/i.test(blob)) {
+      hints.push("Supabase 서버에 연결하지 못했습니다. <code>SUPABASE_URL</code> 이 정확한지(https://xxxx.supabase.co), 프로젝트가 일시중지(Paused) 상태는 아닌지 확인하세요.");
+    }
+    if (code === "42501" || /row-level security|permission denied/i.test(blob)) {
+      hints.push("RLS(행 수준 보안) 정책에 막혔습니다. <code>schema.sql</code> 의 <code>create policy</code> 구문이 모두 실행됐는지 Supabase 대시보드 > Authentication > Policies 에서 확인하세요.");
+    }
+    if (code === "PGRST301" || code === "PGRST302" || /Invalid API key|JWT|apikey|No API key/i.test(blob)) {
+      hints.push("API 키 문제입니다. <code>SUPABASE_ANON_KEY</code> 가 <b>이 프로젝트</b>의 anon(public) 키인지, 앞뒤 공백 없이 전체가 복사됐는지 확인하세요.");
+    }
+    if (code === "42P01" || code === "PGRST205" || code === "PGRST200" || /relation .* does not exist|schema cache|Could not find/i.test(blob)) {
+      hints.push("테이블(또는 관계)을 찾지 못했습니다. Supabase SQL Editor 에서 <code>schema.sql</code> 을 실행했는지 확인하세요. 방금 실행했다면 몇 초 뒤 새로고침하세요.");
+    }
+    if (code === "NO_UPDATE" || /Bucket not found/i.test(blob) || (code === "42501" && /products|storage|objects/i.test(blob))) {
+      hints.push("이미지 기능 설정이 필요합니다. Supabase SQL Editor 에서 <code>migrations/002_images.sql</code> 을 실행하세요.");
+    }
+    if (/maximum allowed size|Payload too large|too large/i.test(blob)) hints.push("파일이 너무 큽니다. 5MB 이하 이미지를 사용하세요.");
+    if (/mime type/i.test(blob)) hints.push("JPG, PNG, WEBP, GIF 이미지만 올릴 수 있습니다.");
+    if (code === "NO_FUNCTION") hints.push("자동 이미지 기능(Edge Function <code>og-image</code>)이 아직 배포되지 않았습니다. README 의 \"자동 이미지\" 안내를 따라 배포하세요.");
+    if (code === "FETCH_META") hints.push("상품 페이지에서 이미지를 가져오지 못했습니다. 쿠팡처럼 자동 접근을 막는 사이트는 사진을 직접 올려주세요.");
+    if (code === "42703") hints.push("컬럼이 없습니다. <code>migrations/001_image_url.sql</code> 을 SQL Editor 에서 실행하세요.");
+    if (code === "23514") hints.push("가격은 1원 이상의 정수여야 합니다 (CHECK 제약 위반).");
+    if (code === "23503") hints.push("존재하지 않는 상품입니다. 목록을 새로고침하세요.");
+    if (code === "22003") hints.push("숫자가 너무 큽니다. 21억 원 이하로 입력하세요.");
+    if (!hints.length) hints.push("아래 원본 메시지를 확인하세요.");
+    return { msg, code, hints };
+  }
+
+  function showError(err, title = "요청에 실패했습니다") {
+    console.error(err);
+    const { msg, code, hints } = explain(err);
+    $error.innerHTML = `
+      <div class="error" role="alert">
+        <strong>⚠️ ${esc(title)}</strong>
+        <ul>${hints.map((h) => `<li>${h}</li>`).join("")}</ul>
+        <div class="raw">원본: ${code ? `[${esc(code)}] ` : ""}${esc(msg)}</div>
+      </div>`;
+    $error.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+  function showConfigError(html) {
+    $error.innerHTML = `<div class="error" role="alert"><strong>⚠️ 설정이 필요합니다</strong><ul><li>${html}</li></ul></div>`;
+    $app.innerHTML = "";
+  }
+  const clearError = () => { $error.innerHTML = ""; };
+
+  // ---------- 설정 검사 ----------
+  function jwtRole(key) {
+    try {
+      const part = key.split(".")[1];
+      const json = atob(part.replace(/-/g, "+").replace(/_/g, "/"));
+      return JSON.parse(json).role;
+    } catch { return null; }
+  }
+
+  function checkConfig() {
+    if (!window.supabase || !window.supabase.createClient) {
+      return "supabase-js 라이브러리를 불러오지 못했습니다. 인터넷 연결 또는 jsDelivr CDN 차단 여부를 확인하세요.";
+    }
+    if (!SUPABASE_URL || SUPABASE_URL.includes("YOUR-PROJECT") || !/^https:\/\/.+/.test(SUPABASE_URL)) {
+      return "<code>index.html</code> 맨 위의 <code>SUPABASE_URL</code> 을 채워주세요. (Project Settings > API > Project URL)";
+    }
+    if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes("YOUR-ANON-KEY")) {
+      return "<code>index.html</code> 맨 위의 <code>SUPABASE_ANON_KEY</code> 를 채워주세요. (Project Settings > API > anon public 키)";
+    }
+    if (SUPABASE_ANON_KEY.startsWith("sb_secret_") || jwtRole(SUPABASE_ANON_KEY) === "service_role") {
+      return "<b>service_role / secret 키가 들어 있습니다.</b> 이 키는 RLS를 우회하므로 브라우저에 절대 노출하면 안 됩니다. 즉시 anon(public) 키로 바꾸고, 이미 배포했다면 Supabase에서 해당 키를 재발급(rotate)하세요.";
+    }
+    return null;
+  }
+
+  const configProblem = checkConfig();
+  if (configProblem) { showConfigError(configProblem); return; }
+
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false },
+  });
+
+  // ---------- 데이터 ----------
+  let products = [];   // [{...product, logs: [최신순]}]
+  let loaded = false;
+  let hasImageCol = true;          // migrations/001_image_url.sql 실행 여부
+  const view = { filter: "all", sort: "recent" };
+
+  function withStats(p) {
+    const logs = (p.price_logs || []).slice().sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at));
+    const prices = logs.map((l) => l.price);
+    const latest = logs[0] ? logs[0].price : null;
+    const prev = logs[1] ? logs[1].price : null;
+    const min = prices.length ? Math.min(...prices) : null;
+    const max = prices.length ? Math.max(...prices) : null;
+    const avg = prices.length ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length) : null;
+    const hit = latest != null && p.target_price != null && latest <= p.target_price;
+    const change = latest != null && prev != null ? latest - prev : null;
+    return { ...p, logs, latest, prev, min, max, avg, hit, change };
+  }
+
+  async function loadProducts() {
+    const cols = "id, name, store, url, target_price, created_at, price_logs(id, price, logged_at)";
+    let res = await db.from("products")
+      .select(hasImageCol ? `${cols}, image_url` : cols)
+      .order("created_at", { ascending: false });
+    if (res.error && res.error.code === "42703" && hasImageCol) {
+      // image_url 컬럼이 아직 없으면 이미지 없이 동작
+      hasImageCol = false;
+      res = await db.from("products").select(cols).order("created_at", { ascending: false });
+    }
+    if (res.error) throw res.error;
+    products = res.data.map(withStats);
+    loaded = true;
+  }
+
+  // ---------- 시각 요소 ----------
+  function thumbHtml(p, localSrc) {
+    const cls = STORE_CLASS[p.store] || "s-etc";
+    const img = localSrc || safeUrl(p.image_url);
+    const initial = esc(String(p.name || "?").trim().charAt(0));
+    return `
+      <div class="thumb ${cls}" aria-hidden="true">
+        <span class="initial">${initial}</span>
+        <span class="emoji">${emojiFor(p.name || "")}</span>
+        ${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+      </div>`;
+  }
+
+  function changeHtml(p) {
+    if (p.change == null) return "";
+    if (p.change === 0) return `<div class="change flat">— 직전과 동일</div>`;
+    const pct = Math.abs((p.change / p.prev) * 100).toFixed(1);
+    return p.change < 0
+      ? `<div class="change down">▼ ${nf.format(-p.change)}원 (${pct}%)</div>`
+      : `<div class="change up">▲ ${nf.format(p.change)}원 (${pct}%)</div>`;
+  }
+
+  // 카드용 스파크라인: 최근 12개 기록
+  function sparkHtml(p, w = 96, h = 40) {
+    const asc = p.logs.slice(0, 12).reverse();
+    if (asc.length < 2) return "";
+    const vals = asc.map((l) => l.price);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    const showTarget = p.target_price != null && p.target_price >= lo * 0.85 && p.target_price <= hi * 1.15;
+    if (showTarget) { lo = Math.min(lo, p.target_price); hi = Math.max(hi, p.target_price); }
+    if (lo === hi) { lo -= 1; hi += 1; }
+    const pad = 4;
+    const x = (i) => pad + (i / (asc.length - 1)) * (w - pad * 2);
+    const y = (v) => pad + (1 - (v - lo) / (hi - lo)) * (h - pad * 2);
+    const d = vals.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+    const a = `${d}L${x(vals.length - 1).toFixed(1)},${h}L${x(0).toFixed(1)},${h}Z`;
+    const trend = vals[vals.length - 1] < vals[0] ? "down" : vals[vals.length - 1] > vals[0] ? "up" : "";
+    return `
+      <svg class="spark ${trend}" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+        ${showTarget ? `<line x1="0" x2="${w}" y1="${y(p.target_price).toFixed(1)}" y2="${y(p.target_price).toFixed(1)}"/>` : ""}
+        <path class="a" d="${a}"/><path class="l" d="${d}"/>
+        <circle cx="${x(vals.length - 1).toFixed(1)}" cy="${y(vals[vals.length - 1]).toFixed(1)}" r="3"/>
+      </svg>`;
+  }
+
+  // 목표가 진행 바
+  function meterHtml(p) {
+    if (p.target_price == null) {
+      return `<div class="meter"><div class="meter-bar"><i style="width:0"></i></div>
+        <div class="meter-label"><span>목표가 미설정</span></div></div>`;
+    }
+    if (p.latest == null) {
+      return `<div class="meter"><div class="meter-bar"><i style="width:0"></i></div>
+        <div class="meter-label"><span>목표 ${won(p.target_price)}</span><span>기록 없음</span></div></div>`;
+    }
+    if (p.hit) {
+      const under = p.target_price - p.latest;
+      return `<div class="meter hit"><div class="meter-bar"><i style="width:100%"></i></div>
+        <div class="meter-label"><span>목표 ${won(p.target_price)}</span><b>${under ? `${won(under)} 저렴` : "딱 목표가"}</b></div></div>`;
+    }
+    const pct = Math.max(4, Math.min(99, (p.target_price / p.latest) * 100));
+    return `<div class="meter"><div class="meter-bar"><i style="width:${pct.toFixed(0)}%"></i></div>
+      <div class="meter-label"><span>목표 ${won(p.target_price)}</span><span>${won(p.latest - p.target_price)} 남음</span></div></div>`;
+  }
+
+  // ---------- 화면: 목록 ----------
+  function visibleProducts() {
+    let list = products.slice();
+    if (view.filter === "hit") list = list.filter((p) => p.hit);
+    else if (view.filter === "drop") list = list.filter((p) => p.change != null && p.change < 0);
+    else if (view.filter !== "all") list = list.filter((p) => p.store === view.filter);
+
+    const gap = (p) => (p.latest == null || p.target_price == null ? Infinity : (p.latest - p.target_price) / p.target_price);
+    if (view.sort === "cheap") list.sort((a, b) => (a.latest ?? Infinity) - (b.latest ?? Infinity));
+    else if (view.sort === "near") list.sort((a, b) => gap(a) - gap(b));
+    else if (view.sort === "drop") list.sort((a, b) => (a.change ?? 0) / (a.prev || 1) - (b.change ?? 0) / (b.prev || 1));
+    return list;
+  }
+
+  function renderList() {
+    const hitCount = products.filter((p) => p.hit).length;
+    const dropCount = products.filter((p) => p.change != null && p.change < 0).length;
+    const storesUsed = STORES.filter((s) => products.some((p) => p.store === s));
+    const chip = (key, label) => `<button type="button" class="chip" data-filter="${esc(key)}" aria-pressed="${view.filter === key}">${label}</button>`;
+    const list = visibleProducts();
+
+    $app.innerHTML = `
+      <div class="stack">
+        <section class="hero">
+          <p>${products.length ? (hitCount ? `🎉 ${hitCount}개 상품이 목표가에 도달했어요!` : "목표가에 도달하면 여기서 알려드려요.") : "첫 상품을 등록하고 가격을 추적해 보세요."}</p>
+          <div class="hero-stats num">
+            <div class="hero-stat"><b>${products.length}</b><span>추적 중</span></div>
+            <div class="hero-stat"><b>${hitCount}</b><span>목표가 도달</span></div>
+            <div class="hero-stat"><b>${dropCount}</b><span>가격 하락</span></div>
+          </div>
+        </section>
+
+        <details class="panel add" ${products.length ? "" : "open"}>
+          <summary>상품 추가 <span class="plus">＋</span></summary>
+          <div class="add-body">
+            <form id="addForm" novalidate>
+              <label>상품 이름
+                <input name="name" required maxlength="200" placeholder="예) 삼다수 2L 12병" autocomplete="off">
+              </label>
+              <label>쇼핑몰
+                <select name="store">${STORES.map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join("")}</select>
+              </label>
+              <label class="full">상품 URL (선택)
+                <input name="url" type="url" inputmode="url" placeholder="상품 페이지 주소를 붙여넣으면 이미지·이름을 자동으로 채워요" autocomplete="off">
+                <span class="file-name" id="urlStatus" aria-live="polite"></span>
+              </label>
+              ${hasImageCol ? `
+              <div class="full">
+                <label style="margin-bottom:4px">상품 이미지 (선택)</label>
+                <div class="img-pick">
+                  <label class="file-btn">📷 사진 선택<input type="file" name="image_file" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+                  <input name="image_url" type="url" inputmode="url" aria-label="이미지 주소" placeholder="또는 이미지 주소 붙여넣기" autocomplete="off">
+                </div>
+                <div class="file-name" id="fileName"></div>
+              </div>` : ""}
+              <label>목표가 (선택, 원)
+                <input name="target_price" inputmode="numeric" placeholder="예) 9,900" autocomplete="off">
+              </label>
+              <label>현재가 (선택, 원)
+                <input name="price" inputmode="numeric" placeholder="지금 가격" autocomplete="off">
+              </label>
+              <div class="full"><button class="primary" type="submit">등록하기</button></div>
+            </form>
+            <div class="add-preview" id="addPreview"></div>
+          </div>
+          ${hasImageCol ? "" : `<p class="notice" style="margin:12px 0 0">상품 이미지를 쓰려면 Supabase SQL Editor 에서 <code>migrations/001_image_url.sql</code> 을 실행하세요. 지금은 이름에 맞는 아이콘으로 표시돼요.</p>`}
+        </details>
+      </div>
+
+      ${products.length ? `
+        <div class="toolbar">
+          <div class="chips" role="group" aria-label="필터">
+            ${chip("all", `전체 ${products.length}`)}
+            ${chip("hit", `🎯 목표가 도달 ${hitCount}`)}
+            ${chip("drop", `▼ 가격 하락 ${dropCount}`)}
+            ${storesUsed.map((s) => chip(s, esc(s))).join("")}
+          </div>
+          <select id="sortSel" aria-label="정렬">
+            <option value="recent">최근 등록순</option>
+            <option value="near">목표가 근접순</option>
+            <option value="drop">하락폭 큰 순</option>
+            <option value="cheap">최근가 낮은 순</option>
+          </select>
+        </div>
+        ${list.length ? `<div class="cards">${list.map(cardHtml).join("")}</div>`
+          : `<div class="panel empty"><span class="big">🔍</span>조건에 맞는 상품이 없어요.</div>`}
+      ` : `
+        <div class="panel empty" style="margin-top:16px">
+          <span class="big">🛒</span>
+          아직 등록된 상품이 없어요. 위에서 첫 상품을 등록해 보세요.
+          <small>등록했는데도 비어 보이면 products 테이블의 조회(select) RLS 정책이 있는지 확인하세요.</small>
+        </div>`}
+    `;
+
+    const form = document.getElementById("addForm");
+    form.addEventListener("submit", onAddProduct);
+    form.addEventListener("input", () => updatePreview(form));
+    form.addEventListener("change", () => updatePreview(form));
+    let urlTimer;
+    form.elements.namedItem("url").addEventListener("input", () => {
+      clearTimeout(urlTimer);
+      urlTimer = setTimeout(() => autoFill(form), 700);
+    });
+    updatePreview(form);
+
+    $app.querySelectorAll(".chip").forEach((b) => b.addEventListener("click", () => {
+      view.filter = b.dataset.filter; renderList();
+    }));
+    const sortSel = document.getElementById("sortSel");
+    if (sortSel) {
+      sortSel.value = view.sort;
+      sortSel.addEventListener("change", () => { view.sort = sortSel.value; renderList(); });
+    }
+  }
+
+  let previewUrl = null;   // 선택한 파일의 blob: 미리보기 URL
+  function updatePreview(form) {
+    const fd = new FormData(form);
+    const file = fd.get("image_file");
+    const hasFile = file instanceof File && file.size > 0;
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+    if (hasFile) previewUrl = URL.createObjectURL(file);
+    const $name = document.getElementById("fileName");
+    if ($name) $name.textContent = hasFile ? `선택됨: ${file.name} (등록할 때 업로드돼요)` : "";
+
+    const el = document.getElementById("addPreview");
+    if (!el) return;
+    const name = String(fd.get("name") || "").trim() || "상품";
+    el.innerHTML = thumbHtml({ name, store: fd.get("store"), image_url: fd.get("image_url") }, previewUrl) + `<small>미리보기</small>`;
+  }
+
+  // ---------- 상품 URL → 이미지/이름 자동 채우기 (Edge Function: og-image) ----------
+  const STORE_HOSTS = [[/coupang\.com$/, "쿠팡"], [/costco\.co\.kr$/, "코스트코"], [/naver\.com$/, "네이버"], [/11st\.co\.kr$/, "11번가"]];
+  const storeFromUrl = (u) => (STORE_HOSTS.find(([re]) => re.test(new URL(u).hostname)) || [])[1] || null;
+  // "상품명 - 쿠팡!" / "상품명 | 코스트코 코리아" 같은 쇼핑몰 꼬리표 제거
+  const cleanTitle = (t) => t.replace(/\s*[|:\-–]\s*(쿠팡|코스트코|11번가|네이버|G마켓|옥션|SSG|스마트스토어)[^|:\-–]*$/i, "").trim().slice(0, 200);
+
+  async function fetchMeta(url) {
+    const { data, error } = await db.functions.invoke("og-image", { body: { url } });
+    if (error) {
+      let msg = error.message;
+      try { const body = await error.context.json(); if (body && body.error) msg = body.error; } catch {}
+      const missing = error.name === "FunctionsFetchError" || error.name === "FunctionsRelayError"
+        || (error.context && error.context.status === 404);
+      throw { code: missing ? "NO_FUNCTION" : "FETCH_META", message: msg };
+    }
+    return data;
+  }
+
+  let autoImage = null;   // 자동으로 채운 이미지 주소 (사용자가 직접 바꾸면 덮어쓰지 않음)
+  let metaSeq = 0;
+  async function autoFill(form) {
+    const field = (n) => form.elements.namedItem(n);
+    const $s = document.getElementById("urlStatus");
+    const u = safeUrl(field("url").value.trim());
+    if (!u) { $s.textContent = ""; return; }
+
+    const store = storeFromUrl(u);
+    if (store) field("store").value = store;
+    if (!hasImageCol) return updatePreview(form);
+
+    const seq = ++metaSeq;
+    $s.textContent = "🔎 상품 이미지를 찾는 중…";
+    try {
+      const meta = await fetchMeta(u);
+      if (seq !== metaSeq) return;
+      if (meta.title && !field("name").value.trim()) field("name").value = cleanTitle(meta.title);
+      const img = field("image_url");
+      if (meta.image && (!img.value.trim() || img.value === autoImage)) {
+        img.value = meta.image;
+        autoImage = meta.image;
+      }
+      $s.textContent = meta.image ? "✓ 상품 이미지를 찾았어요" : "이 페이지에서 이미지를 찾지 못했어요. 사진을 직접 올려주세요.";
+    } catch (err) {
+      if (seq !== metaSeq) return;
+      $s.textContent = err.code === "NO_FUNCTION"
+        ? "자동 이미지 기능이 아직 설정되지 않았어요 (og-image 함수 배포 필요)."
+        : `이미지를 가져오지 못했어요: ${err.message}`;
+    }
+    updatePreview(form);
+  }
+
+  // ---------- 이미지 업로드 (Supabase Storage) ----------
+  const BUCKET = "product-images";
+  const IMAGE_TYPES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
+
+  // 업로드 전에 긴 변을 1000px 로 줄여 용량 절약 (GIF 는 애니메이션 보존을 위해 그대로)
+  async function shrinkImage(file, max = 1000) {
+    if (file.type === "image/gif") return file;
+    try {
+      const bmp = await createImageBitmap(file);
+      const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(bmp.width * scale);
+      c.height = Math.round(bmp.height * scale);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      const blob = await new Promise((r) => c.toBlob(r, "image/webp", 0.85));
+      if (blob && IMAGE_TYPES[blob.type] && blob.size < file.size) return blob;
+    } catch {}
+    return file;
+  }
+
+  async function uploadImage(file) {
+    if (!IMAGE_TYPES[file.type]) throw { message: "JPG, PNG, WEBP, GIF 이미지만 올릴 수 있어요." };
+    const blob = await shrinkImage(file);
+    if (blob.size > 5 * 1024 * 1024) throw { message: "이미지가 5MB를 넘어요. 더 작은 사진을 골라주세요." };
+    const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const path = `${id}.${IMAGE_TYPES[blob.type]}`;
+    const { error } = await db.storage.from(BUCKET).upload(path, blob, { contentType: blob.type, upsert: false });
+    if (error) throw error;
+    return db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  async function setProductImage(productId, url) {
+    const { data, error } = await db.from("products").update({ image_url: url }).eq("id", productId).select("id");
+    if (error) throw error;
+    // RLS 에 update 정책이 없으면 에러 없이 0행이 바뀜
+    if (!data.length) throw { code: "NO_UPDATE", message: "이미지를 저장할 권한이 없습니다 (0행 수정됨)." };
+  }
+
+  function cardHtml(p, i) {
+    const link = safeUrl(p.url);
+    return `
+      <article class="card${p.hit ? " hit" : ""}" style="animation-delay:${Math.min(i, 8) * 40}ms">
+        <a class="card-main" href="#/p/${p.id}">
+          <div style="position:relative">
+            <div class="over">
+              <span class="badge">${esc(p.store)}</span>
+              ${p.hit ? `<span class="badge hit">🎯 목표가 도달</span>` : ""}
+            </div>
+            ${thumbHtml(p)}
+          </div>
+          <div class="card-body">
+            <h3>${esc(p.name)}</h3>
+            <div class="price-row">
+              <div>
+                <div style="font-size:12px;color:var(--muted)">최근가</div>
+                <div class="price-now num${p.hit ? " good" : ""}${p.latest == null ? " none" : ""}">${p.latest == null ? "기록 없음" : won(p.latest)}</div>
+                ${changeHtml(p)}
+              </div>
+              ${sparkHtml(p)}
+            </div>
+            ${meterHtml(p)}
+            <dl class="mini-stats num">
+              <div><dt>역대 최저가</dt><dd>${won(p.min)}</dd></div>
+              <div><dt>목표가</dt><dd>${won(p.target_price)}</dd></div>
+              <div><dt>기록</dt><dd>${p.logs.length}개</dd></div>
+            </dl>
+          </div>
+        </a>
+        <div class="card-foot">
+          <span>${p.logs[0] ? fmtAgo(p.logs[0].logged_at) + " 기록" : "기록 없음"}</span>
+          ${link ? `<a href="${esc(link)}" target="_blank" rel="noopener noreferrer">상품 페이지 ↗</a>` : ""}
+        </div>
+      </article>`;
+  }
+
+  async function onAddProduct(e) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const name = String(fd.get("name") || "").trim();
+    const store = String(fd.get("store") || "");
+    const urlRaw = String(fd.get("url") || "").trim();
+    const imgRaw = String(fd.get("image_url") || "").trim();
+    const imgFile = fd.get("image_file");
+    const hasFile = imgFile instanceof File && imgFile.size > 0;
+    const target = parsePrice(fd.get("target_price"));
+    const price = parsePrice(fd.get("price"));
+
+    const bad = (m) => showError({ message: m }, "입력값을 확인하세요");
+    if (!name) return bad("상품 이름을 입력하세요.");
+    if (!STORES.includes(store)) return bad("쇼핑몰을 선택하세요.");
+    if (urlRaw && !safeUrl(urlRaw)) return bad("상품 URL은 http:// 또는 https:// 로 시작해야 합니다.");
+    if (imgRaw && !safeUrl(imgRaw)) return bad("이미지 URL은 http:// 또는 https:// 로 시작해야 합니다.");
+    if (target !== null && !validPrice(target)) return bad("목표가는 1 ~ 2,147,483,647 사이의 정수로 입력하세요.");
+    if (price !== null && !validPrice(price)) return bad("현재가는 1 ~ 2,147,483,647 사이의 정수로 입력하세요.");
+
+    const row = { name, store, url: urlRaw ? safeUrl(urlRaw) : null, target_price: target };
+    if (hasImageCol) row.image_url = imgRaw ? safeUrl(imgRaw) : null;
+
+    const btn = form.querySelector("button[type=submit]");
+    btn.disabled = true;
+    try {
+      if (hasImageCol && hasFile) {
+        btn.textContent = "사진 올리는 중…";
+        row.image_url = await uploadImage(imgFile);
+      }
+      const { data, error } = await db.from("products").insert(row).select("id").single();
+      if (error) throw error;
+      if (price !== null) {
+        const { error: logErr } = await db.from("price_logs").insert({ product_id: data.id, price });
+        if (logErr) throw logErr;
+      }
+      clearError();
+      toast("상품을 등록했어요");
+      await loadProducts();
+      location.hash = `#/p/${data.id}`;
+    } catch (err) {
+      showError(err, "상품 등록에 실패했습니다");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "등록하기";
+    }
+  }
+
+  // ---------- 화면: 상세 ----------
+  function renderDetail(id) {
+    const p = products.find((x) => String(x.id) === String(id));
+    if (!p) {
+      $app.innerHTML = `<a class="back" href="#/">← 목록</a><div class="panel empty"><span class="big">🤔</span>상품을 찾을 수 없어요.</div>`;
+      return;
+    }
+    const link = safeUrl(p.url);
+    const asc = p.logs.slice().reverse();
+    const fromMin = p.latest != null && p.min != null ? p.latest - p.min : null;
+
+    $app.innerHTML = `
+      <a class="back" href="#/">← 목록</a>
+      <div class="stack">
+        <section class="panel detail-hero">
+          <div class="thumb-wrap">
+            ${thumbHtml(p)}
+            ${hasImageCol ? `
+            <div class="thumb-actions">
+              <label class="pill-btn" id="imgUploadBtn">📷 ${p.image_url ? "사진 변경" : "사진 올리기"}
+                <input type="file" id="imgFile" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+              </label>
+              <button type="button" class="pill-btn" id="imgAutoBtn">✨ 자동</button>
+              <button type="button" class="pill-btn" id="imgUrlBtn">🔗 주소로</button>
+            </div>` : ""}
+          </div>
+          <div class="detail-info">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span class="badge">${esc(p.store)}</span>
+              ${p.hit ? `<span class="badge hit">🎯 목표가 도달</span>` : ""}
+            </div>
+            <h2>${esc(p.name)}</h2>
+            <div class="sub">
+              ${fmtDate(p.created_at)} 등록
+              ${link ? ` · <a href="${esc(link)}" target="_blank" rel="noopener noreferrer">상품 페이지 열기 ↗</a>` : ""}
+            </div>
+            <div class="detail-price">
+              <span class="price-now num${p.hit ? " good" : ""}${p.latest == null ? " none" : ""}">${p.latest == null ? "가격 기록 없음" : won(p.latest)}</span>
+              ${changeHtml(p)}
+            </div>
+            ${meterHtml(p)}
+            <dl class="tiles num">
+              <div><dt>역대 최저가</dt><dd class="${fromMin === 0 ? "good" : ""}">${won(p.min)}</dd></div>
+              <div><dt>목표가</dt><dd>${won(p.target_price)}</dd></div>
+              <div><dt>평균가</dt><dd>${won(p.avg)}</dd></div>
+              <div><dt>기록</dt><dd>${p.logs.length}개</dd></div>
+            </dl>
+            ${p.hit ? `<div class="hit-banner">🎯 지금이 살 때! 최근가가 목표가보다 ${won(p.target_price - p.latest)} 저렴해요.</div>`
+              : fromMin === 0 && p.logs.length > 1 ? `<div class="hit-banner">✨ 지금이 역대 최저가예요.</div>` : ""}
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>현재가 기록</h2>
+          <form class="inline" id="logForm" novalidate>
+            <input name="price" inputmode="numeric" placeholder="예) 12,900" aria-label="현재가(원)" autocomplete="off" required>
+            <button class="primary" type="submit">기록</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>가격 추이</h2>
+          <div class="chart" id="chart"></div>
+        </section>
+
+        <section class="panel">
+          <h2>기록 내역</h2>
+          ${p.logs.length ? `<ul class="logs">${p.logs.map((l, i) => {
+            const prev = p.logs[i + 1];
+            const d = prev ? l.price - prev.price : 0;
+            const diff = d ? `<span class="diff ${d < 0 ? "down" : "up"}">${d < 0 ? "▼" : "▲"} ${nf.format(Math.abs(d))}</span>` : "";
+            const tag = l.price === p.min && p.logs.length > 1 ? `<span class="tag">최저</span>` : "";
+            return `<li><span class="when">${fmtLogDate(l.logged_at)}</span><span><span class="price">${won(l.price)}</span>${diff}${tag}</span></li>`;
+          }).join("")}</ul>` : `<div class="empty"><span class="big">📝</span>아직 기록이 없어요.</div>`}
+        </section>
+      </div>
+    `;
+
+    drawChart(asc, p.target_price);
+    document.getElementById("logForm").addEventListener("submit", (e) => onAddLog(e, p.id));
+
+    const $file = document.getElementById("imgFile");
+    if ($file) {
+      $file.addEventListener("change", () => {
+        const f = $file.files[0];
+        if (f) changeImage(p.id, () => uploadImage(f));
+      });
+      document.getElementById("imgAutoBtn").addEventListener("click", () => {
+        const raw = prompt("상품 페이지 주소를 붙여넣으세요. 대표 이미지를 찾아옵니다.", p.url || "");
+        if (raw == null) return;
+        const u = safeUrl(raw.trim());
+        if (!u) return showError({ message: "상품 페이지 주소는 http:// 또는 https:// 로 시작해야 합니다." }, "입력값을 확인하세요");
+        changeImage(p.id, async () => {
+          const meta = await fetchMeta(u);
+          if (!meta.image) throw { message: "이 페이지에서 이미지를 찾지 못했어요. 사진을 직접 올려주세요." };
+          return meta.image;
+        });
+      });
+      document.getElementById("imgUrlBtn").addEventListener("click", () => {
+        const raw = prompt("이미지 주소를 붙여넣으세요 (https://...)", p.image_url || "");
+        if (raw == null) return;
+        const url = raw.trim() ? safeUrl(raw.trim()) : null;
+        if (raw.trim() && !url) return showError({ message: "이미지 주소는 http:// 또는 https:// 로 시작해야 합니다." }, "입력값을 확인하세요");
+        changeImage(p.id, async () => url);
+      });
+    }
+  }
+
+  async function changeImage(productId, getUrl) {
+    const btns = document.querySelectorAll(".thumb-actions .pill-btn");
+    btns.forEach((b) => { b.disabled = true; b.style.opacity = ".6"; });
+    const label = document.getElementById("imgUploadBtn");
+    if (label) label.firstChild.textContent = "⏳ 저장 중… ";
+    try {
+      const url = await getUrl();
+      await setProductImage(productId, url);
+      clearError();
+      await loadProducts();
+      route();
+      toast(url ? "이미지를 바꿨어요" : "이미지를 지웠어요");
+    } catch (err) {
+      showError(err, "이미지 저장에 실패했습니다");
+      route();
+    }
+  }
+
+  async function onAddLog(e, productId) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const price = parsePrice(new FormData(form).get("price"));
+    if (!validPrice(price)) {
+      return showError({ message: "가격은 1 ~ 2,147,483,647 사이의 정수로 입력하세요. (콤마는 써도 돼요)" }, "입력값을 확인하세요");
+    }
+    const btn = form.querySelector("button");
+    btn.disabled = true;
+    try {
+      const { error } = await db.from("price_logs").insert({ product_id: productId, price });
+      if (error) throw error;
+      clearError();
+      await loadProducts();
+      route();
+      toast(`${won(price)} 기록했어요`);
+    } catch (err) {
+      showError(err, "가격 기록에 실패했습니다");
+      btn.disabled = false;
+    }
+  }
+
+  // ---------- SVG 라인 차트 (외부 라이브러리 없음) ----------
+  let chartArgs = null;
+  function drawChart(logsAsc, target) {
+    chartArgs = [logsAsc, target];
+    const el = document.getElementById("chart");
+    if (!el) return;
+    if (!logsAsc.length) {
+      el.innerHTML = `<div class="empty"><span class="big">📈</span>가격을 기록하면 추이 그래프가 나타나요.</div>`;
+      return;
+    }
+
+    const W = Math.max(300, Math.round(el.clientWidth || 600));
+    const H = W < 500 ? 220 : 280;
+    const pad = { t: 22, r: 14, b: 28, l: 72 };
+    const iw = W - pad.l - pad.r;
+    const ih = H - pad.t - pad.b;
+
+    const prices = logsAsc.map((l) => l.price);
+    let lo = Math.min(...prices, target ?? Infinity);
+    let hi = Math.max(...prices, target ?? -Infinity);
+    if (lo === hi) { lo = lo * 0.9; hi = hi * 1.1; }
+    const span = hi - lo;
+    // 눈금이 1,000 / 5,000 / 10,000 처럼 떨어지도록 범위를 맞춤
+    const raw = (span * 1.2) / 3;
+    const mag = 10 ** Math.floor(Math.log10(raw));
+    const step = [1, 2, 2.5, 5, 10].find((n) => n * mag >= raw) * mag;
+    lo = Math.max(0, Math.floor((lo - span * 0.08) / step) * step);
+    hi = Math.ceil((hi + span * 0.08) / step) * step;
+
+    const times = logsAsc.map((l) => new Date(l.logged_at).getTime());
+    const t0 = times[0], t1 = times[times.length - 1];
+    const byTime = t1 > t0;
+    const x = (i) => logsAsc.length === 1
+      ? pad.l + iw / 2
+      : pad.l + (byTime ? (times[i] - t0) / (t1 - t0) : i / (logsAsc.length - 1)) * iw;
+    const y = (v) => pad.t + (1 - (v - lo) / (hi - lo)) * ih;
+
+    const ticks = [];
+    for (let v = lo; v <= hi + step / 2; v += step) ticks.push(v);
+    const grid = ticks.map((v) => `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/>`).join("");
+    const yLabels = ticks.map((v) => `<text x="${pad.l - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${nf.format(Math.round(v))}</text>`).join("");
+
+    const pts = logsAsc.map((l, i) => [x(i), y(l.price)]);
+    const line = pts.map(([px, py], i) => `${i ? "L" : "M"}${px.toFixed(1)},${py.toFixed(1)}`).join("");
+    const area = pts.length > 1
+      ? `${line}L${pts[pts.length - 1][0].toFixed(1)},${(pad.t + ih).toFixed(1)}L${pts[0][0].toFixed(1)},${(pad.t + ih).toFixed(1)}Z`
+      : "";
+
+    const minPrice = Math.min(...prices);
+    const minIdx = prices.lastIndexOf(minPrice);
+    const lastIdx = prices.length - 1;
+    const dots = pts.map(([px, py], i) => {
+      const cls = i === lastIdx ? "dot last" : i === minIdx ? "dot min" : "dot";
+      const r = i === lastIdx || i === minIdx ? 5 : 3.5;
+      return `<circle class="${cls}" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${r}">
+        <title>${esc(fmtDate(logsAsc[i].logged_at))} · ${esc(won(logsAsc[i].price))}</title></circle>`;
+    }).join("");
+
+    const [lx, ly] = pts[lastIdx];
+    const lastAnchor = lx > W - 90 ? "end" : "start";
+    const lastLabel = `<text class="label" x="${(lx + (lastAnchor === "end" ? -8 : 8)).toFixed(1)}" y="${(ly - 10).toFixed(1)}" text-anchor="${lastAnchor}">${esc(won(prices[lastIdx]))}</text>`;
+
+    // 목표가 라벨이 최근가 라벨과 겹치면 왼쪽 끝으로 옮김
+    const ty = target != null ? y(target) : 0;
+    const clash = target != null && lastAnchor === "end" && Math.abs(ty - ly) < 26;
+    const targetLine = target != null ? `
+      <g class="target">
+        <line x1="${pad.l}" x2="${W - pad.r}" y1="${ty.toFixed(1)}" y2="${ty.toFixed(1)}"/>
+        <text x="${clash ? pad.l + 4 : W - pad.r}" y="${(ty + (ty - pad.t < 14 ? 14 : -6)).toFixed(1)}"
+              text-anchor="${clash ? "start" : "end"}">목표 ${esc(won(target))}</text>
+      </g>` : "";
+
+    const xLabels = logsAsc.length > 1
+      ? `<text x="${pad.l}" y="${H - 8}" text-anchor="start">${esc(fmtShort(logsAsc[0].logged_at))}</text>
+         <text x="${W - pad.r}" y="${H - 8}" text-anchor="end">${esc(fmtShort(logsAsc[lastIdx].logged_at))}</text>`
+      : `<text x="${pad.l + iw / 2}" y="${H - 8}" text-anchor="middle">${esc(fmtShort(logsAsc[0].logged_at))}</text>`;
+
+    el.innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img"
+           aria-label="가격 추이 차트: 기록 ${logsAsc.length}개, 최저 ${esc(won(minPrice))}, 최근 ${esc(won(prices[lastIdx]))}">
+        <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop class="s0" offset="0"/><stop class="s1" offset="1"/>
+        </linearGradient></defs>
+        <g class="grid">${grid}</g>
+        <g class="axis">${yLabels}${xLabels}</g>
+        ${area ? `<path d="${area}" fill="url(#areaGrad)"/>` : ""}
+        ${targetLine}
+        <path class="line" d="${line}"/>
+        ${dots}
+        ${lastLabel}
+      </svg>
+      <p class="chart-note">● 채운 점: 최근가 · <span style="color:var(--good)">●</span> 역대 최저가${target != null ? " · 점선: 목표가" : ""}</p>`;
+  }
+
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { if (chartArgs && document.getElementById("chart")) drawChart(...chartArgs); }, 150);
+  });
+
+  // ---------- 라우팅 ----------
+  function route() {
+    if (!loaded) return;
+    chartArgs = null;
+    const m = location.hash.match(/^#\/p\/(\d+)/);
+    if (m) renderDetail(m[1]); else renderList();
+  }
+  window.addEventListener("hashchange", () => { route(); window.scrollTo(0, 0); });
+
+  (async () => {
+    try {
+      await loadProducts();
+      route();
+    } catch (err) {
+      showError(err, "상품 목록을 불러오지 못했습니다");
+      $app.innerHTML = "";
+    }
+  })();
+})();
+</script>
+</body>
+</html>
